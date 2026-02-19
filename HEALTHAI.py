@@ -4,8 +4,8 @@ import google.generativeai as genai
 from PIL import Image
 import streamlit as st
 
-GOOGLE_API_KEY="AIzaSyCQ-4nPm3-QQWixZz16Ab9X0YhpxZKU" # Replaced with a placeholder key for security
-genai.configure(api_key=GOOGLE_API_KEY)
+api_key = st.secrets["GOOGLE_API_KEY"]
+genai.configure(api_key=api_key)
 
 if'health_profile' not in st.session_state:
     st.session_state.health_profile ={
