@@ -1,11 +1,16 @@
+import sys
+
+if 'streamlit' not in sys.modules:
+    %pip install -q streamlit
+
 from logging import warning
 import os
 import google.generativeai as genai
 from PIL import Image
 import streamlit as st
 
-api_key = st.secrets["GOOGLE_API_KEY"]
-genai.configure(api_key=api_key)
+GOOGLE_API_KEY="AIzaSyCQ-4nPm3-QQWixZz16Ab9X0YhpxZKU" # Replaced with a placeholder key for security
+genai.configure(api_key=GOOGLE_API_KEY)
 
 if'health_profile' not in st.session_state:
     st.session_state.health_profile ={
@@ -14,7 +19,12 @@ if'health_profile' not in st.session_state:
         'routines' : '30-minute walk 3x/week',
         'restrictions': 'vegetarian\nLow carb',
         'preferences': '', # Added for consistency
+        'daily_calorie_goal': 2000, # Initializing daily_calorie_goal
     }
+
+# Initialize daily_food_log if it doesn't exist
+if 'daily_food_log' not in st.session_state:
+    st.session_state.daily_food_log = []
 
 def get_gemini_response(input_prompt,image_data=None):
     model =genai.GenerativeModel('gemini-2.5-flash')
@@ -56,6 +66,12 @@ with st.sidebar:
     restrictions =st.text_area("Dietary Restrictions",
                                     value=st.session_state.health_profile['restrictions'])
 
+    # Add a st.number_input for 'Daily Calorie Goal'
+    daily_calorie_goal = st.number_input("Daily Calorie Goal",
+                                        min_value=1000,
+                                        max_value=5000,
+                                        value=st.session_state.health_profile.get('daily_calorie_goal', 2000)) # Default to 2000 if not found
+
     if st.button("Update Profile"):
         st.session_state.health_profile ={
         'goals': health_goals,
@@ -63,9 +79,10 @@ with st.sidebar:
         'routines' : fitness_routines,
         'preferences': food_preferences, # Corrected key from 'prefrences'
         'restrictions': restrictions,
+        'daily_calorie_goal': daily_calorie_goal, # Save the new input
         }
         st.success("Profile updated!")
-tab1, tab2,tab3 =st.tabs(["Meal Planning","Food Analysis","Health Insights"])
+tab1, tab2, tab3, tab4 =st.tabs(["Meal Planning","Food Analysis","Health Insights", "Calorie Tracker"])
 
 with tab1:
     st.subheader("Personalized Meal Planning")
@@ -93,6 +110,7 @@ with tab1:
                 Routines: {st.session_state.health_profile['routines']}
                 Restrictions: {st.session_state.health_profile['restrictions']}
                 Preferences: {st.session_state.health_profile['preferences']}
+                Daily Calorie Goal: {st.session_state.health_profile['daily_calorie_goal']} Calories
                 User specific requirements: {user_inputs}
                 Additional requirements : {user_inputs if user_inputs else 'None'}
 
@@ -165,3 +183,43 @@ with tab3:
              response=get_gemini_response(prompt)
              st.subheader("expert helath insights")
              st.markdown(response)
+
+with tab4:
+    st.subheader("Daily Calorie Tracker")
+
+    food_item = st.text_input("Food Item")
+    calories = st.number_input("Calories", min_value=0, value=0)
+
+    if st.button("Add Food"):
+        if food_item and calories:
+            st.session_state.daily_food_log.append({"item": food_item, "calories": calories})
+            st.success(f"Added {food_item} with {calories} calories.")
+        else:
+            st.warning("Please enter both a food item and its calorie count.")
+
+    st.write("### Today's Food Log")
+    if st.session_state.daily_food_log:
+        total_calories = sum([entry["calories"] for entry in st.session_state.daily_food_log])
+        daily_calorie_goal_value = st.session_state.health_profile.get('daily_calorie_goal', 2000)
+
+        st.metric(label="Consumed / Goal", value=f"{total_calories} / {daily_calorie_goal_value} calories")
+
+        progress_ratio = min(total_calories / daily_calorie_goal_value, 1.0) if daily_calorie_goal_value > 0 else 0
+        st.progress(progress_ratio, text=f"{(progress_ratio*100):.1f}% of daily goal")
+
+        if total_calories < daily_calorie_goal_value:
+            st.info(f"You are under your daily calorie goal by {daily_calorie_goal_value - total_calories} calories.")
+        elif total_calories == daily_calorie_goal_value:
+            st.success("Goal Met! You've reached your daily calorie goal.")
+        else:
+            st.warning(f"You have exceeded your daily calorie goal by {total_calories - daily_calorie_goal_value} calories.")
+
+        for entry in st.session_state.daily_food_log:
+            st.write(f"- {entry['item']}: {entry['calories']} calories")
+        st.markdown(f"**Total Calories Today: {total_calories}**")
+    else:
+        st.info("No food items logged yet.")
+
+    if st.button("Reset Daily Log"):
+        st.session_state.daily_food_log = []
+        st.experimental_rerun()
