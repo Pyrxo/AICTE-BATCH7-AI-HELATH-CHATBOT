@@ -217,4 +217,4 @@ with tab4:
 
     if st.button("Reset Daily Log"):
         st.session_state.daily_food_log = []
-        st.experimental_rerun()
+        st.rerun()
