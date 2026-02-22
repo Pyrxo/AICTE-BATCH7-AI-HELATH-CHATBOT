@@ -77,7 +77,7 @@ with st.sidebar:
         'daily_calorie_goal': daily_calorie_goal, # Save the new input
         }
         st.success("Profile updated!")
-tab1, tab2, tab3, tab4 =st.tabs(["Meal Planning","Food Analysis","Health Insights", "Calorie Tracker"])
+tab1, tab2, tab3, tab4, tab5 =st.tabs(["Meal Planning","Food Analysis","Health Insights", "Calorie Tracker", "Yoga"])
 
 with tab1:
     st.subheader("Personalized Meal Planning")
@@ -106,8 +106,7 @@ with tab1:
                 Restrictions: {st.session_state.health_profile['restrictions']}
                 Preferences: {st.session_state.health_profile['preferences']}
                 Daily Calorie Goal: {st.session_state.health_profile['daily_calorie_goal']} Calories
-                User specific requirements: {user_inputs}
-                Additional requirements : {user_inputs if user_inputs else 'None'}
+                User specific requirements: {user_inputs if user_inputs else 'None'}
 
                  Provide:
                  1. A 7 day meal plan with breakfast, lunch,dinner,and snacks
@@ -218,3 +217,32 @@ with tab4:
     if st.button("Reset Daily Log"):
         st.session_state.daily_food_log = []
         st.rerun()
+
+with tab5:
+    st.subheader("Yoga for Wellness")
+
+    yoga_query = st.text_input("Ask me about yoga poses or their benefits",
+                               placeholder="e.g., 'What are the benefits of Downward Dog pose?'")
+
+    if st.button("Get Yoga Insights"):
+        if not yoga_query:
+            st.warning("Please enter a question about yoga.")
+        else:
+            with st.spinner("Fetching yoga insights..."):
+                prompt = f"""
+                You are an expert yoga instructor and wellness coach.
+                Provide detailed, comprehensive insights about the following yoga query:
+                {yoga_query}
+                
+                Include:
+                1. Clear explanation of the pose (if applicable).
+                2. Step-by-step instructions for performing the pose (if applicable).
+                3. Key physical and mental benefits.
+                4. Any precautions or modifications.
+                5. Suggestions for who might benefit most from this pose.
+                
+                Format the outputs clearly with headings and bullet points.
+                """
+                response = get_gemini_response(prompt)
+                st.subheader("Yoga Insights")
+                st.markdown(response)
