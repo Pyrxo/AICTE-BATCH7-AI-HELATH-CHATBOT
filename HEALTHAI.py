@@ -1,3 +1,8 @@
+import sys
+
+if 'streamlit' not in sys.modules:
+    %pip install -q streamlit
+
 from logging import warning
 import os
 import google.generativeai as genai
