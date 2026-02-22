@@ -158,7 +158,7 @@ with tab3:
    placeholder='e.g.,\'how can i improve my gut health')
    if st.button("get expert insights"):
        if not health_query:
-          st.warning("please enter a health question")
+          st.warning("Please enter a health question")
        else:
            with st.spinner("reserching your question..."):
              prompt=f"""
@@ -182,7 +182,13 @@ with tab4:
     st.subheader("Daily Calorie Tracker")
 
     food_item = st.text_input("Food Item")
-    calories = st.number_input("Calories", min_value=0, value=0)
+    calories_input = st.text_input("Calories", placeholder="ENTER THE CALORIE OF YOUR ITEM YOU WILL FIND THROUGH FOOD ANALYSIS")
+    calories = 0
+    if calories_input:
+        try:
+            calories = int(calories_input)
+        except ValueError:
+            st.error("Please enter a valid number for calories.")
 
     if st.button("Add Food"):
         if food_item and calories:
