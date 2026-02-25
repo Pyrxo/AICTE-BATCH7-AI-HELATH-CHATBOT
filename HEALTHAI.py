@@ -3,7 +3,7 @@ import google.generativeai as genai
 from PIL import Image
 import streamlit as st
 
-GOOGLE_API_KEY="YOUR_ACTUAL_GEMINI_API_KEY" # Replace with your actual Gemini API key
+GOOGLE_API_KEY="AIzaSyCuf0pOkyEH0DV3SlmRaGxPByV-S0ij-2k" # Replaced with your actual Gemini API key
 genai.configure(api_key=GOOGLE_API_KEY)
 
 if'health_profile' not in st.session_state:
@@ -183,8 +183,7 @@ with tab3:
            with st.spinner("reserching your question..."):
              prompt=f"""
              you are a certified nutrionist and health expert.
-             provide detailed ,science backed insights about:
-             {health_query}
+             provide detailed ,science backed insights about:\n             {health_query}
              consider the user's health profiles:
              {st.session_state.health_profile}
              include:
