@@ -78,23 +78,23 @@ with st.sidebar:
         st.success("Profile updated!")
 
 # Walkthrough content embedded here, outside of tabs, using st.expander
-with st.expander("App Features Walkthrough"):
-    st.markdown("### Your Health Profile (Sidebar)")
+with st.expander("## **🌟 App Features Walkthrough 🌟**"):
+    st.markdown("### **Your Health Profile (Sidebar)**")
     st.info("**Purpose**: This section, always visible on the left sidebar, allows you to personalize your health and dietary information.\n**How to Use**: Fill in your Health Goals, Medical Conditions, Fitness Routines, Food Preferences, Dietary Restrictions, and Daily Calorie Goal. Click the Update Profile button to save your changes. This information is crucial for generating personalized recommendations in other sections.")
 
-    st.markdown("### Meal Planning (Tab 1)")
+    st.markdown("### **Meal Planning (Tab 1)**")
     st.info("**Purpose**: Get personalized 7-day meal plans based on your health profile.\n**How to Use**:\n1. Ensure your Health Profile in the sidebar is up-to-date.\n2. Optionally, add any specific requirements (e.g., 'quick meals for work') in the Your Current Needs text area.\n3. Click the Generate Personalized Meal Plan button.\n4. The AI will generate a detailed meal plan including nutritional breakdown, contextual explanations, a shopping list, and preparation tips.\n5. You can Download Meal Plan as a text file.")
 
-    st.markdown("### Food Analysis (Tab 2)")
+    st.markdown("### **Food Analysis (Tab 2)**")
     st.info("**Purpose**: Analyze the nutritional content of your food from an image.\n**How to Use**:\n1. Click Browse files to upload an image of your food (e.g., a plate of a meal).\n2. Once the image is displayed, click the Analyze Food button.\n3. The AI will provide estimated calories, macronutrient breakdown, health benefits, concerns based on restrictions, and suggested portion sizes.")
 
-    st.markdown("### Health Insights (Tab 3)")
+    st.markdown("### **Health Insights (Tab 3)**")
     st.info("**Purpose**: Ask any health or nutrition-related questions and get expert, science-backed insights.\n**How to Use**:\n1. Type your question (e.g., 'how can I improve my gut health?') in the input field.\n2. Click Get Expert Insights.\n3. The AI will provide detailed explanations, practical recommendations, precautions, and references, considering your health profile.")
 
-    st.markdown("### Daily Calorie Tracker (Tab 4)")
+    st.markdown("### **Daily Calorie Tracker (Tab 4)**")
     st.info("**Purpose**: Log your food intake and track your daily calorie consumption against your set goal.\n**How to Use**:\n1. In the input fields, enter a Food Item and its Calories (you can use Food Analysis to estimate calories).\n2. Click Add Food to add it to your daily log.\n3. The tracker will display your Consumed / Goal calories, a progress bar showing your percentage of the daily goal, and messages indicating if you are under, met, or exceeded your goal.\n4. Click Reset Daily Log to clear all entries and start fresh for the day.")
 
-    st.markdown("### Yoga (Tab 5)")
+    st.markdown("### **Yoga (Tab 5)**")
     st.info("**Purpose**: Get insights and instructions on various yoga poses and their benefits.\n**How to Use**:\n1. Type your yoga-related question (e.g., 'What are the benefits of Downward Dog pose?') in the input field.\n2. Click Get Yoga Insights.\n3. The AI will provide explanations, step-by-step instructions, physical and mental benefits, precautions, and who might benefit most from the pose.")
 
 tab1, tab2, tab3, tab4, tab5 =st.tabs(["Meal Planning","Food Analysis","Health Insights", "Calorie Tracker", "Yoga"])
