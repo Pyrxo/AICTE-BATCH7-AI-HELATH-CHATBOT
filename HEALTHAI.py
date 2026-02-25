@@ -1,4 +1,3 @@
-from logging import warning
 import os
 import google.generativeai as genai
 from PIL import Image
