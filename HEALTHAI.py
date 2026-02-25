@@ -3,7 +3,7 @@ import google.generativeai as genai
 from PIL import Image
 import streamlit as st
 
-GOOGLE_API_KEY="AIzaSyCQ-4nPm3-QQWixZz16Ab9X0YhpxZKU" # Replaced with a placeholder key for security
+GOOGLE_API_KEY="YOUR_ACTUAL_GEMINI_API_KEY" # Replace with your actual Gemini API key
 genai.configure(api_key=GOOGLE_API_KEY)
 
 if'health_profile' not in st.session_state:
