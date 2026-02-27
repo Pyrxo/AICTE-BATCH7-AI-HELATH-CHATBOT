@@ -3,20 +3,7 @@ import google.generativeai as genai
 from PIL import Image
 import streamlit as st
 
-# Check if running in Google Colab environment
-if 'google.colab' in sys.modules:
-    from google.colab import userdata
-    GOOGLE_API_KEY=userdata.get('Gemini_API_Key')
-else:
-    # If not in Colab, try to get the API key from environment variables
-    GOOGLE_API_KEY=os.getenv('Gemini_API_Key')
-    if GOOGLE_API_KEY is None:
-        # Fallback for local development or if environment variable is not set
-        # You might want to prompt the user or load from a config file here
-        warning("Gemini_API_Key not found in environment variables. Please set it or ensure you are in a Colab environment.")
-        # For now, let's set it to a placeholder to prevent immediate errors, though it won't work without a real key.
-        GOOGLE_API_KEY="YOUR_ACTUAL_GEMINI_API_KEY" # IMPORTANT: Replace with your actual key if not using environment variables
-
+GOOGLE_API_KEY="YOUR_ACTUAL_GEMINI_API_KEY" # Replace with your actual Gemini API key
 genai.configure(api_key=GOOGLE_API_KEY)
 
 if'health_profile' not in st.session_state:
@@ -91,7 +78,7 @@ with st.sidebar:
         st.success("Profile updated!")
 
 # Walkthrough content embedded here, outside of tabs, using st.expander
-with st.expander("## **🌟 App Features Walkthrough 🌟**"):
+with st.expander("## **✨ App Features Walkthrough ✨**"):
     st.markdown("### **Your Health Profile (Sidebar)**")
     st.info("**Purpose**: This section, always visible on the left sidebar, allows you to personalize your health and dietary information.\n**How to Use**: Fill in your Health Goals, Medical Conditions, Fitness Routines, Food Preferences, Dietary Restrictions, and Daily Calorie Goal. Click the Update Profile button to save your changes. This information is crucial for generating personalized recommendations in other sections.")
 
@@ -245,7 +232,7 @@ with tab4:
         elif total_calories == daily_calorie_goal_value:
             st.success("Goal Met! You've reached your daily calorie goal.")
         else:
-            st.warning(f"You have exceeded your daily calorie goal by {total_calorie_goal_value - daily_calorie_goal_value} calories.")
+            st.warning(f"You have exceeded your daily calorie goal by {total_calories - daily_calorie_goal_value} calories.")
 
         for entry in st.session_state.daily_food_log:
             st.write(f"- {entry['item']}: {entry['calories']} calories")
