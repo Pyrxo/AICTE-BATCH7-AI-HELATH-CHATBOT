@@ -3,7 +3,17 @@ import google.generativeai as genai
 from PIL import Image
 import streamlit as st
 
-GOOGLE_API_KEY="YOUR_ACTUAL_GEMINI_API_KEY" # Replace with your actual Gemini API key
+# Check if running in Google Colab environment
+if 'google.colab' in sys.modules:
+    from google.colab import userdata
+    GOOGLE_API_KEY=userdata.get('Gemini_API_Key')
+else:
+    # If not in Colab, try to get the API key from environment variables
+    GOOGLE_API_KEY=os.getenv('Gemini_API_Key')
+    if GOOGLE_API_KEY is None:
+        # Raise an error if the API key is not found in environment variables outside Colab
+        raise ValueError("Gemini_API_Key not found in environment variables. Please set the 'Gemini_API_Key' environment variable or run in a Colab environment with the key set in UserData.")
+
 genai.configure(api_key=GOOGLE_API_KEY)
 
 if'health_profile' not in st.session_state:
@@ -265,7 +275,7 @@ with tab5:
                 2. Step-by-step instructions for performing the pose (if applicable).
                 3. Key physical and mental benefits.
                 4. Any precautions or modifications.
-                5. Suggestions for who might benefit most from the pose.
+                5. Suggestions for who might benefit most from this pose.
 
                 Format the outputs clearly with headings and bullet points.
                 """
