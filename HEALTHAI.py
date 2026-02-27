@@ -1,22 +1,31 @@
+import sys
 import os
 import google.generativeai as genai
 from PIL import Image
 import streamlit as st
 
-# Check if running in Google Colab environment
-if 'google.colab' in sys.modules:
-    from google.colab import userdata
-    GOOGLE_API_KEY=userdata.get('Gemini_API_Key')
+# --- API Key Configuration Start ---
+# Display a warning/disclaimer for the user
+st.warning("Please enter your Gemini API Key below to use the AI features. You can get one from [Google AI Studio](https://makersuite.google.com/key).")
+
+# Input field for the API key
+user_api_key = st.text_input("Enter your Gemini API Key here", type="password", key="gemini_api_key_input")
+
+# Use the user-provided API key, or None if not entered
+GOOGLE_API_KEY = user_api_key if user_api_key else None
+
+if GOOGLE_API_KEY:
+    try:
+        genai.configure(api_key=GOOGLE_API_KEY)
+    except Exception as e:
+        st.error(f"Error configuring Gemini API: {e}. Please check your API key.")
+        GOOGLE_API_KEY = None # Invalidate key if configuration fails
 else:
-    # If not in Colab, try to get the API key from environment variables
-    GOOGLE_API_KEY=os.getenv('Gemini_API_Key')
-    if GOOGLE_API_KEY is None:
-        # Raise an error if the API key is not found in environment variables outside Colab
-        raise ValueError("Gemini_API_Key not found in environment variables. Please set the 'Gemini_API_Key' environment variable or run in a Colab environment with the key set in UserData.")
+    st.info("Please enter your Gemini API Key to enable AI functionalities.")
+# --- API Key Configuration End ---
 
-genai.configure(api_key=GOOGLE_API_KEY)
 
-if'health_profile' not in st.session_state:
+if 'health_profile' not in st.session_state:
     st.session_state.health_profile ={
         'goals': 'lose 10 pounds in 3 months\nImprove cardiovascular health',
         'conditions': 'none',
@@ -30,10 +39,12 @@ if'health_profile' not in st.session_state:
 if 'daily_food_log' not in st.session_state:
     st.session_state.daily_food_log = []
 
-def get_gemini_response(input_prompt,image_data=None):
-    model =genai.GenerativeModel('gemini-2.5-flash')
+def get_gemini_response(input_prompt, image_data=None):
+    if not GOOGLE_API_KEY:
+        return "Error: Gemini API Key is not set. Please enter your API key above."
+    model = genai.GenerativeModel('gemini-2.5-flash')
 
-    content =[input_prompt]
+    content = [input_prompt]
 
     if image_data:
         content.extend(image_data)
@@ -43,7 +54,7 @@ def get_gemini_response(input_prompt,image_data=None):
         return response.text
     except Exception as e:
         return f"Error generating response:{str(e)}"
-def input_image_setup( uploaded_file):
+def input_image_setup(uploaded_file):
     if uploaded_file is not None:
         bytes_data = uploaded_file.getvalue()
         image_parts =[{
@@ -64,9 +75,9 @@ with st.sidebar:
     medical_conditions =st.text_area("Medical Conditions",
                                     value=st.session_state.health_profile['conditions'])
     fitness_routines =st.text_area("Fitness Routines",
-                                    value=st.session_state.health_profile.get('routines', '')) # Using .get() for robustness
+                                    value=st.session_state.health_profile.get('routines', ''))
     food_preferences =st.text_area("Food Preferences",
-                                    value=st.session_state.health_profile.get('preferences', '')) # Using .get() for robustness
+                                    value=st.session_state.health_profile.get('preferences', ''))
     restrictions =st.text_area("Dietary Restrictions",
                                     value=st.session_state.health_profile['restrictions'])
 
@@ -74,16 +85,16 @@ with st.sidebar:
     daily_calorie_goal = st.number_input("Daily Calorie Goal",
                                         min_value=1000,
                                         max_value=5000,
-                                        value=st.session_state.health_profile.get('daily_calorie_goal', 2000)) # Default to 2000 if not found
+                                        value=st.session_state.health_profile.get('daily_calorie_goal', 2000))
 
     if st.button("Update Profile"):
         st.session_state.health_profile ={
         'goals': health_goals,
         'conditions': medical_conditions,
         'routines' : fitness_routines,
-        'preferences': food_preferences, # Corrected key from 'prefrences'
+        'preferences': food_preferences,
         'restrictions': restrictions,
-        'daily_calorie_goal': daily_calorie_goal, # Save the new input
+        'daily_calorie_goal': daily_calorie_goal,
         }
         st.success("Profile updated!")
 
@@ -123,11 +134,12 @@ with tab1:
         st.json(st.session_state.health_profile)
 
     if st.button("Generate Personalised Meal Plan"):
-        if not any(st.session_state.health_profile.values()):
-            st.warning("please complete your health pprofile in the  sidebar")
-
+        if not GOOGLE_API_KEY:
+            st.warning("Please enter your Gemini API Key above to generate a meal plan.")
+        elif not any(st.session_state.health_profile.values()):
+            st.warning("Please complete your health profile in the sidebar")
         else:
-            with st.spinner("creating your personalised meal plan..."):
+            with st.spinner("Creating your personalised meal plan..."):
                 prompt =f"""
                 Create a personalised meal plan based on the following health factors:
                 Goals: {st.session_state.health_profile['goals']}
@@ -148,7 +160,7 @@ with tab1:
                 """
 
                 response= get_gemini_response(prompt)
-                st.subheader("your personalised meal plan")
+                st.subheader("Your personalised meal plan")
                 st.markdown(response)
 
                 st.download_button(
@@ -158,41 +170,48 @@ with tab1:
                  mime="text/plain"
                 )
 with tab2:
-  st.subheader("food anlysis")
+  st.subheader("Food Analysis")
 
-  uploaded_file=st.file_uploader("upload an image of your food",
+  uploaded_file=st.file_uploader("Upload an image of your food",
                                  type=["jpg","jpeg","png"])
   if uploaded_file is not None:
     image = Image.open(uploaded_file)
-    st.image(image,caption="uploaded food image.",use_column_width=True)
-  if st.button("analyze food"):
-    with st.spinner("analyzing your food..."):
-      image_data =input_image_setup(uploaded_file)
+    st.image(image,caption="Uploaded food image.",use_column_width=True)
+  if st.button("Analyze Food"):
+    if not GOOGLE_API_KEY:
+        st.warning("Please enter your Gemini API Key above to analyze food.")
+    elif uploaded_file is None:
+        st.warning("Please upload an image to analyze food.")
+    else:
+        with st.spinner("Analyzing your food..."):
+            image_data =input_image_setup(uploaded_file)
 
-      prompt=f"""
-      you are an expert  nutrionist analyze this food image.
-      provide detailed  information about:
-      -estimmated calories
-      -macronutrient breakdown
-      -potential  health benefits
-      -any concerns based on common dietary restrictions
-      -suggested portion sizes
-      if the food contains multiple items analyze each separately.
-      """
-      response =get_gemini_response(prompt,image_data)
-      st.subheader("food anlysis results")
-      st.markdown(response)
+            prompt=f"""
+            You are an expert nutrionist analyze this food image.
+            provide detailed  information about:
+            -Estimated calories
+            -Macronutrient breakdown
+            -Potential  health benefits
+            -Any concerns based on common dietary restrictions
+            -Suggested portion sizes
+            If the food contains multiple items analyze each separately.
+            """
+            response =get_gemini_response(prompt,image_data)
+            st.subheader("Food Analysis results")
+            st.markdown(response)
 with tab3:
-   st.subheader("health insights")
-   health_query=st.text_input("ask any health/nutrition related question",
-   placeholder='e.g.,\'how can i improve my gut health')
-   if st.button("get expert insights"):
-       if not health_query:
+   st.subheader("Health Insights")
+   health_query=st.text_input("Ask any health/nutrition related question",
+   placeholder='e.g.,\'How can I improve my gut health?')
+   if st.button("Get Expert Insights"):
+       if not GOOGLE_API_KEY:
+           st.warning("Please enter your Gemini API Key above to get health insights.")
+       elif not health_query:
           st.warning("Please enter a health question")
        else:
-           with st.spinner("reserching your question..."):
+           with st.spinner("Researching your question..."):
              prompt=f"""
-             you are a certified nutrionist and health expert.
+             You are a certified nutrionist and health expert.
              provide detailed ,science backed insights about:
              {health_query}
              consider the user's health profiles:
@@ -205,7 +224,7 @@ with tab3:
              use simple language but maintain accuracy.
              """
              response=get_gemini_response(prompt)
-             st.subheader("expert helath insights")
+             st.subheader("Expert Health Insights")
              st.markdown(response)
 
 with tab4:
@@ -261,7 +280,9 @@ with tab5:
                                placeholder="e.g., 'What are the benefits of Downward Dog pose?'")
 
     if st.button("Get Yoga Insights"):
-        if not yoga_query:
+        if not GOOGLE_API_KEY:
+            st.warning("Please enter your Gemini API Key above to get yoga insights.")
+        elif not yoga_query:
             st.warning("Please enter a question about yoga.")
         else:
             with st.spinner("Fetching yoga insights..."):
